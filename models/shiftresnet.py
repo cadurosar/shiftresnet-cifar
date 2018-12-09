@@ -14,7 +14,7 @@ import torch.nn as nn
 import torch.nn.functional as F
 
 from .resnet import ResNet
-from models.shiftnet_cuda_v2.nn import GenericShift_cuda
+#from models.shiftnet_cuda_v2.nn import GenericShift_cuda
 
 
 class ShiftConv(nn.Module):

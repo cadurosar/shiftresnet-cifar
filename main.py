@@ -11,8 +11,10 @@ import torchvision.transforms as transforms
 
 import os
 import argparse
+import parameters
 
 from models import ResNet20
+from models import SATResNet20
 from models import ResNet56
 from models import ResNet110
 from models import ShiftResNet20
@@ -28,6 +30,7 @@ from torch.autograd import Variable
 all_models = {
     'resnet20': ResNet20,
     'shiftresnet20': ShiftResNet20,
+    'satresnet20': SATResNet20,
     'depthwiseresnet20': DepthwiseResNet20,
     'resnet56': ResNet56,
     'shiftresnet56': ShiftResNet56,
@@ -176,7 +179,8 @@ def train(epoch):
         _, predicted = torch.max(outputs.data, 1)
         total += targets.size(0)
         correct += predicted.eq(targets.data).cpu().sum()
-
+        parameters.temperature = parameters.temperature * 1.00004
+        
         progress_bar(batch_idx, len(trainloader), 'Loss: %.3f | Acc: %.3f%% (%d/%d)'
             % (train_loss/total, 100.*float(correct)/float(total), correct, total))
 
@@ -204,7 +208,7 @@ def test(epoch):
 
     # Save checkpoint.
     acc = 100.*float(correct)/float(total)
-    if acc > best_acc:
+    if epoch>250:#acc > best_acc:
         print('Saving..')
         state = {
             'net': net.module if use_cuda else net,
@@ -218,6 +222,12 @@ def test(epoch):
         best_acc = acc
 
 
-for epoch in range(start_epoch, 164):
+for epoch in range(start_epoch, 300):
     train(epoch)
     test(epoch)
+    print("Nb params: " + str(sum([p.data.nelement() for p in net.parameters()])) + " and temperature is " + str(parameters.temperature) + " and max is " + str(parameters.maxvalue))
+parameters.binarized = True
+parameters.display = True
+test(164)
+
+
